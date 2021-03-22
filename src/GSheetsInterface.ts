@@ -77,7 +77,7 @@ export class GSheetsInterface {
             logger.error('Error while updating rows from gsheets', {response: updateRes})
             return false
         }
-        logger.verbose(`Write ${rows.length} to  gsheets successful`)
+        logger.verbose(`Write ${rows.length} rows to gsheets successful`)
         return true
     }
 }
