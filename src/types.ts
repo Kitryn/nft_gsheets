@@ -20,3 +20,14 @@ export class SellAssetRow {
         }        
     }
 }
+
+export class GApiError extends Error {
+    constructor(message: string, data: any, ...params: any) {
+        super(...params)
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, GApiError)
+        }
+        this.name = 'GApi Error'
+        this.message = message
+    }
+}

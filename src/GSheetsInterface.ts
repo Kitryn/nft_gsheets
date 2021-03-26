@@ -4,7 +4,7 @@ import winston from 'winston'
 const parentLogger = winston.loggers.get('default')
 const logger = parentLogger.child({module: 'GSheetsInterface'})
 
-import { RANGE_LETTERS } from './types'
+import { RANGE_LETTERS, GApiError } from './types'
 
 export class GSheetsInterface {
     oAuth2Client: OAuth2Client
@@ -23,7 +23,7 @@ export class GSheetsInterface {
         return `${RANGE_LETTERS.slice(first - 1, first)}1:${RANGE_LETTERS.slice(first + numColumns - 1, first + numColumns)}`
     }
 
-    private async _fetchTableFromColumns(first: number, numColumns: number): Promise<Array<any> | null> {
+    private async _fetchTableFromColumns(first: number, numColumns: number): Promise<Array<any>> {
         const A1Range = this._A1Range(first, numColumns)
         let res = await this.sheets.spreadsheets.values.get({
             spreadsheetId: this.spreadsheetId,
@@ -34,8 +34,7 @@ export class GSheetsInterface {
         })
         let values = res?.data?.values
         if (res.statusText !== 'OK' || values == null) {
-            logger.error(`Error while fetching rows from GSheets`, {response: res})
-            return null
+            throw new GApiError(`Error while fetching rows from GSheets`, res)
         }
         
         return values
@@ -54,6 +53,8 @@ export class GSheetsInterface {
     }
 
     async pushRows (numColumns: number, rows: Array<Array<any>>): Promise<boolean> {
+        // TODO: if updateres fails but clearres succeeded try and revert?
+        // TODO: throw instead of returning success bool??
         const A1Range = this._A1Range(1, numColumns)
         let clearRes = await this.sheets.spreadsheets.values.clear({
             spreadsheetId: this.spreadsheetId,

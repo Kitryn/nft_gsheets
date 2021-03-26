@@ -2,7 +2,7 @@ import winston from 'winston'
 const parentLogger = winston.loggers.get('default')
 const logger = parentLogger.child({module: 'SellSheet'})
 import { GSheetsInterface } from './GSheetsInterface'
-import { SellAssetRow } from './types'
+import { SellAssetRow, GApiError } from './types'
 
 
 export class SellSheet {
@@ -12,12 +12,8 @@ export class SellSheet {
         this.gSheetsInterface = gsheets
     }
 
-    async SheetToObjects(): Promise<Array<SellAssetRow> | null> {
-        let rows: Array<any> = await this.gSheetsInterface.fetchAllRows(SellAssetRow.NumFields)  // will at least be an empty array if errors
-        if (rows.length < 1) {
-            logger.error('Unable to read from gsheets!', {rows: rows})
-            return null
-        }
+    async SheetToObjects(): Promise<Array<SellAssetRow>> {
+        let rows: Array<any> = await this.gSheetsInterface.fetchAllRows(SellAssetRow.NumFields)  // can throw GApiError
         if (rows.length === 0) return []
 
         const headers: Array<any> = rows[0]
